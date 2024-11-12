@@ -20,7 +20,7 @@ class Graph:
         if self.is_directed:                                                            
             style = {'curve-style': 'bezier', 'target-arrow-shape': 'triangle', 'label': 'data(label)', 'color': '#FFFFFF'}
         else:
-            style = {'curve-style': 'bezier', 'label': 'data(label)'}
+            style = {'curve-style': 'bezier', 'label': 'data(label)' }
         self.stylesheet.append({'selector': 'edge', 'style': style})
 
         self.adj_list = adj_list

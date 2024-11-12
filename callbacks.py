@@ -2,7 +2,7 @@ from dash import Input, Output, ctx
 from dash.exceptions import PreventUpdate
 from settings import *
 from graph import Graph
-from graph_generators import random_graph
+from graph_generators import erdos_renyi_random_graph, random_graph
 
 def add_edge_to_graph(adj_list, edge, is_directed, is_weighted, current_layout, weight= ''):
     source = edge[0]
@@ -59,6 +59,7 @@ def register_callbacks(app):
 
     @app.callback(Output(component_id='graph', component_property='elements'),
                   Output(component_id='current_graph', component_property='data'),
+                  Output(component_id='graph', component_property='stylesheet'),
                   Input(component_id='current_graph', component_property='data'),
                   Input(component_id='add_edge', component_property='n_clicks'),
                   Input(component_id='new_edge_source_field', component_property='value'),
@@ -68,10 +69,13 @@ def register_callbacks(app):
                   Input(component_id='add_vertex', component_property='n_clicks'),
                   Input(component_id='remove_vertex', component_property='n_clicks'),
                   Input(component_id='vertex_name', component_property='value'),
-                  Input(component_id='new_graph_button', component_property='n_clicks'))
-    def add_new_edge(current_graph, add_edge, new_edge_source_field, new_edge_dest_field, new_edge_weight_field, remove_edge, add_vertex, remove_vertex, vertex_name, new_graph_button):
+                  Input(component_id='new_graph_button', component_property='n_clicks'),
+                  Input(component_id='num_nodes_field_new_graph', component_property='value'),
+                  Input(component_id='num_edges_field_new_graph', component_property='value'),
+                  Input(component_id='new_graph_checkboxes', component_property='value'))
+    def add_new_edge(current_graph, add_edge, new_edge_source_field, new_edge_dest_field, new_edge_weight_field, remove_edge, add_vertex, remove_vertex, vertex_name, new_graph_button, num_nodes_field_new_graph, num_edges_field_new_graph, new_graph_checkboxes):
         # print(ctx.triggered_id)
-        if ctx.triggered_id in [None, 'current_graph', 'new_edge_source_field', 'new_edge_dest_field', 'new_edge_weight_field', 'vertex_name']: raise PreventUpdate
+        if ctx.triggered_id in [None, 'new_graph_checkboxes', 'current_graph', 'num_edges_field_new_graph', 'num_nodes_field_new_graph', 'new_edge_source_field', 'new_edge_dest_field', 'new_edge_weight_field', 'vertex_name']: raise PreventUpdate
         elif ctx.triggered_id == 'add_edge':
             G = add_edge_to_graph(
                 current_graph['adj_list'], 
@@ -81,7 +85,7 @@ def register_callbacks(app):
                 current_graph['layout'],
                 new_edge_weight_field
             )
-            return G.elements, G.to_dict()
+            return G.elements, G.to_dict(), G.stylesheet
         elif ctx.triggered_id == 'remove_edge':
             G = remove_edge_from_graph(
                 current_graph['adj_list'],
@@ -89,26 +93,37 @@ def register_callbacks(app):
                 current_graph['is_directed'],
                 current_graph['is_weighted'],
             )
-            return G.elements, G.to_dict()
+            return G.elements, G.to_dict(), G.stylesheet
         elif ctx.triggered_id == 'add_vertex':
             G = add_vertex_to_graph(
                 current_graph['adj_list'],
                 vertex_name,
                 current_graph['is_directed'],
                 current_graph['is_weighted'])
-            return G.elements, G.to_dict()
+            return G.elements, G.to_dict(), G.stylesheet
         elif ctx.triggered_id == 'remove_vertex':
             G = remove_vertex_from_graph(
                 current_graph['adj_list'],
                 vertex_name,
                 current_graph['is_directed'],
                 current_graph['is_weighted'])
-            return G.elements, G.to_dict()
+            return G.elements, G.to_dict(), G.stylesheet
         elif ctx.triggered_id == 'new_graph_button':
-            G = Graph(
-                random_graph(10),
-                weighted= False,
-                digraph= True,
-                layout= current_graph['layout']['name'])
-            return G.elements, G.to_dict()
+            if 'new_graph_is_directed' in new_graph_checkboxes:
+                print("Graph is supposed to be directed")
+                G = Graph(
+                    erdos_renyi_random_graph(int(num_nodes_field_new_graph), int(num_edges_field_new_graph)),
+                    weighted= False,
+                    digraph= True,
+                    layout= current_graph['layout']['name'])
+                print(G.to_dict()['stylesheet'])
+            else:
+                print("Graph is not supposed to be directed")
+                G = Graph(
+                    erdos_renyi_random_graph(int(num_nodes_field_new_graph), int(num_edges_field_new_graph), directed= False),
+                    weighted= False,
+                    digraph= False,
+                    layout= current_graph['layout']['name'])
+                print(G.to_dict()['stylesheet'])
+            return G.elements, G.to_dict(), G.stylesheet
 

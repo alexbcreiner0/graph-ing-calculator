@@ -8,7 +8,7 @@ from callbacks import register_callbacks
 
 app = Dash(__name__, title= 'Visual Graphing Calculator')
 
-G: Graph = Graph(G_unknown)
+G: Graph = Graph(G_3_7, digraph= True)
 # G: Graph = Graph(digraph= True, weighted= True)
 register_callbacks(app)
 
@@ -41,7 +41,29 @@ def get_dropdown_row():
 def get_new_graph_row():
     return html.Div(
         [
-            html.Button( 'New Graph', id= 'new_graph_button', style={'margin-right': '5px'} )
+            html.Button( 'New Graph', id= 'new_graph_button', style={'margin-right': '5px'} ),
+            html.Label('Number of nodes: ', style={'margin-right': '5px'}),
+            dcc.Input(
+                id= 'num_nodes_field_new_graph',
+                value='',
+                type='text',
+                style= {'width': '50px', 'margin-right': '10px'}
+            ),
+            html.Label('Number of edges per node: ', style={'margin-right': '5px'}),
+            dcc.Input(
+                id= 'num_edges_field_new_graph',
+                value='',
+                type='text',
+                style= {'width': '50px', 'margin-right': '10px'}
+            ),
+            dcc.Checklist(
+                id= 'new_graph_checkboxes',
+                options=[
+                    {'label': "Directed", "value": "new_graph_is_directed"},
+                    {'label': "Weighted", "value": "new_graph_is_weighted"}
+                ],
+                value=[]
+            )
         ],
         style={'display': 'flex', 'align-items': 'center'}
     )
@@ -111,13 +133,6 @@ def get_graph_edit_row():
     )
 
 if __name__ == '__main__':
-    import json
-    print(G.to_dict())
-    try:
-        json.dumps(vars(G))
-        print("G's properties are JSON-serializable.")
-    except TypeError as e:
-        print("Found non-serializable data in G:", e)
     cyto.load_extra_layouts()
     # extra_edges = False
 
