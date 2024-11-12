@@ -4,10 +4,10 @@ Learning aid for visualizing graphs and their algorithms
 How to use:
 1. Clone the repo
 2. Create and activate a virtual environment
-3. Pip install packages using requirements.txt
+3. Recursive pip install from requirements.txt
 
 ```sh
-git clone git@github.com:alexbcreiner0/graph-ing-calculator.git
+git clone https://github.com/alexbcreiner0/graph-ing-calculator.git
 cd graph-ing-calculator
 python3 -m venv dash
 source ./dash/bin/activate
