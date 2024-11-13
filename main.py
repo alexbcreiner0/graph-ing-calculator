@@ -69,6 +69,14 @@ def get_new_graph_row():
         style={'display': 'flex', 'align-items': 'center'}
     )
 
+def graph_algos_row():
+    return html.Div(
+        [
+
+        ],
+        style={'display': 'flex', 'align-items': 'center'}
+    )
+
 def get_graph_edit_row():
     return html.Div(
         [
@@ -160,80 +168,4 @@ if __name__ == '__main__':
         style= { 'display': 'flex', 'flex-direction': 'row', 'gap': '20px', 'min-height': '100vh' }
     )
 
-    app.run(debug= True)
-    
-# Old layout in case the new fancy one fails
-# def get_graph_edit_row():
-#     return html.Div(
-#         [
-#             html.H3(
-#                 'Add/remove an edge',
-#                 style = {'margin-right': '10px'}
-#             ),
-#             html.H3(
-#                 'Source name: ',
-#                 style = {'margin-right': '10px'}
-#             ),
-#             dcc.Input(
-#                 id= 'new_edge_source_field', 
-#                 value= '', 
-#                 type= 'text',
-#                 style= {'min-width': '30px', 'min-height': '30px'}
-#             ),
-#             html.H3(
-#                 'Dest name: ',
-#                 style = {'margin-right': '10px'}
-#             ),
-#             dcc.Input(
-#                 id= 'new_edge_dest_field',
-#                 value= '',
-#                 type= 'text',
-#                 style= {'min-width': '30px', 'min-height': '30px'}
-#             ),
-#             html.H3(
-#                 'Weight (if applicable): ',
-#                 style = {'margin-right': '10px'}
-#             ),
-#             dcc.Input(
-#                 id= 'new_edge_weight_field',
-#                 value= '',
-#                 type= 'text',
-#                     style= {'min-width': '30px', 'min-height': '30px'}
-#             ),
-#             html.Button(
-#                 'Add',
-#                 id= 'add_edge',
-#                 style= {'min-height': '30px'}
-#             ),
-#             html.Button(
-#                 'Remove',
-#                 id= 'remove_edge',
-#                 style= {'min-height': '30px'}
-#             ),
-#             html.H3(
-#                 "Add/remove a vertex",
-#                 style = {'margin-right': '10px'}
-#             ),
-#             html.H3(
-#                 "Vertex name",
-#                 style = {'margin-right': '10px'}
-#             ),
-#             dcc.Input(
-#                 id= 'vertex_name',
-#                 value= '',
-#                 type= 'text',
-#                 style= {'min-width': '30px', 'min-height': '30px'}
-#             ),
-#             html.Button(
-#                 'Add',
-#                 id= 'add_vertex',
-#                 style= {'min-height': '30px'}
-#             ),
-#             html.Button(
-#                 'Remove',
-#                 id= 'remove_vertex',
-#                 style= {'min-height': '30px'}
-#             )
-#         ],
-#         style= { 'display': 'flex', 'flex_direction': 'row', 'align-items': 'center' }
-#     )
+    app.run(debug= True)    

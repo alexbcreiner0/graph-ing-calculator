@@ -116,3 +116,6 @@ class Graph:
             wheelSensitivity=0.1
         )
 
+    def color_edge(self, edge, edge_type):
+        index = self.edge_directory[str(edge[0])+str(edge[1])]
+        self.elements[index]['classes'] = edge_type

@@ -48,6 +48,60 @@ def remove_vertex_from_graph(adj_list, vertex, is_directed, is_weighted):
         del adj_list[vertex]
         return Graph(adj_list, digraph= is_directed, weighted= is_weighted)
 
+def create_new_graph(num_nodes, num_edges, new_graph_checkboxes, layout):
+    if 'new_graph_is_directed' in new_graph_checkboxes:
+        if 'new_graph_is_weighted' in new_graph_checkboxes and 'new_graph_is_acyclic' in new_graph_checkboxes:
+            G = Graph( # directed, weighted, acyclic
+                erdos_renyi_random_graph(int(num_nodes), int(num_edges), weighted= True, acyclic= True),
+                weighted= True,
+                digraph= True,
+                layout= layout)
+            print(G.adj_list)
+        elif 'new_graph_is_weighted' in new_graph_checkboxes:
+            G = Graph( # directed, weighted, not acyclic
+                erdos_renyi_random_graph(int(num_nodes), int(num_edges), weighted= True),
+                weighted= True,
+                digraph= True,
+                layout= layout)
+        elif 'new_graph_is_acyclic' in new_graph_checkboxes:
+            G = Graph( # directed, unweighted, acyclic
+                erdos_renyi_random_graph(int(num_nodes), int(num_edges), acyclic= True),
+                weighted= False,
+                digraph= True,
+                layout= layout)
+        else:
+            G = Graph( # directed, unweighted, not acyclic
+                erdos_renyi_random_graph(int(num_nodes), int(num_edges), weighted= False, acyclic= True),
+                weighted= False,
+                digraph= True,
+                layout= layout)
+    else:
+        if 'new_graph_is_weighted' in new_graph_checkboxes and 'new_graph_is_acyclic' in new_graph_checkboxes: 
+            G = Graph( # undirected, weighted, acyclic
+                erdos_renyi_random_graph(int(num_nodes), int(num_edges), directed= False, weighted= True, acyclic= True),
+                weighted= True,
+                digraph= False,
+                layout= layout)
+        elif 'new_graph_is_weighted' in new_graph_checkboxes: 
+            G = Graph( # undirected, weighted, not acyclic
+                erdos_renyi_random_graph(int(num_nodes), int(num_edges), directed= False, weighted= True),
+                weighted= True,
+                digraph= False,
+                layout= layout)
+        elif 'new_graph_is_acyclic' in new_graph_checkboxes: 
+            G = Graph( # undirected, unweighted, acyclic
+                erdos_renyi_random_graph(int(num_nodes), int(num_edges), directed= False, acyclic= True),
+                weighted= False,
+                digraph= False,
+                layout= layout)
+        else: 
+            G = Graph( # undirected, unweighted
+                erdos_renyi_random_graph(int(num_nodes), int(num_edges), directed= False),
+                weighted= False,
+                digraph= False,
+                layout= layout)
+    return G
+
 def register_callbacks(app):
     @app.callback(Output(component_id='graph', component_property='layout', allow_duplicate=True), 
         Input('layout dropdown', 'value'), 
@@ -80,35 +134,24 @@ def register_callbacks(app):
         if ctx.triggered_id in [None, 'new_graph_checkboxes', 'current_graph', 'num_edges_field_new_graph', 'num_nodes_field_new_graph', 'new_edge_source_field', 'new_edge_dest_field', 'new_edge_weight_field', 'vertex_name']: raise PreventUpdate
         elif ctx.triggered_id == 'add_edge':
             G = add_edge_to_graph(
-                current_graph['adj_list'], 
-                (new_edge_source_field, new_edge_dest_field),
-                current_graph['is_directed'],
-                current_graph['is_weighted'],
-                current_graph['layout'],
-                new_edge_weight_field
-            )
+                current_graph['adj_list'], (new_edge_source_field, new_edge_dest_field),
+                current_graph['is_directed'], current_graph['is_weighted'],
+                current_graph['layout'], new_edge_weight_field)
             return G.elements, G.to_dict(), G.stylesheet, current_graph['layout']['name']
         elif ctx.triggered_id == 'remove_edge':
             G = remove_edge_from_graph(
-                current_graph['adj_list'],
-                (new_edge_source_field, new_edge_dest_field),
-                current_graph['is_directed'],
-                current_graph['is_weighted'],
-            )
+                current_graph['adj_list'], (new_edge_source_field, new_edge_dest_field),
+                current_graph['is_directed'], current_graph['is_weighted'])
             return G.elements, G.to_dict(), G.stylesheet, current_graph['layout']['name']
         elif ctx.triggered_id == 'add_vertex':
             G = add_vertex_to_graph(
-                current_graph['adj_list'],
-                vertex_name,
-                current_graph['is_directed'],
-                current_graph['is_weighted'])
+                current_graph['adj_list'], vertex_name,
+                current_graph['is_directed'], current_graph['is_weighted'])
             return G.elements, G.to_dict(), G.stylesheet, current_graph['layout']['name']
         elif ctx.triggered_id == 'remove_vertex':
             G = remove_vertex_from_graph(
-                current_graph['adj_list'],
-                vertex_name,
-                current_graph['is_directed'],
-                current_graph['is_weighted'])
+                current_graph['adj_list'], vertex_name,
+                current_graph['is_directed'], current_graph['is_weighted'])
             return G.elements, G.to_dict(), G.stylesheet, current_graph['layout']['name']
         elif ctx.triggered_id == 'new_graph_button':
             random_layout = LAYOUT_LIST[randint(0,4)]
@@ -120,55 +163,7 @@ def register_callbacks(app):
                 num_edges = int(num_edges_field_new_graph)
             except ValueError:
                 num_edges = 7
-            if 'new_graph_is_directed' in new_graph_checkboxes:
-                if 'new_graph_is_weighted' in new_graph_checkboxes and 'new_graph_is_acyclic' in new_graph_checkboxes:
-                    G = Graph( # directed, weighted, acyclic
-                        erdos_renyi_random_graph(int(num_nodes), int(num_edges), weighted= True, acyclic= True),
-                        weighted= True,
-                        digraph= True,
-                        layout= random_layout)
-                elif 'new_graph_is_weighted' in new_graph_checkboxes:
-                    G = Graph( # directed, weighted, not acyclic
-                        erdos_renyi_random_graph(int(num_nodes), int(num_edges), weighted= True),
-                        weighted= True,
-                        digraph= True,
-                        layout= random_layout)
-                elif 'new_graph_is_acyclic' in new_graph_checkboxes:
-                    G = Graph( # directed, unweighted, acyclic
-                        erdos_renyi_random_graph(int(num_nodes), int(num_edges), acyclic= True),
-                        weighted= False,
-                        digraph= True,
-                        layout= random_layout)
-                else:
-                    G = Graph( # directed, unweighted, not acyclic
-                        erdos_renyi_random_graph(int(num_nodes), int(num_edges), weighted= False, acyclic= True),
-                        weighted= False,
-                        digraph= True,
-                        layout= random_layout)
-            else:
-                if 'new_graph_is_weighted' in new_graph_checkboxes and 'new_graph_is_acyclic' in new_graph_checkboxes: 
-                    G = Graph( # undirected, weighted, acyclic
-                        erdos_renyi_random_graph(int(num_nodes), int(num_edges), directed= False, weighted= True, acyclic= True),
-                        weighted= True,
-                        digraph= False,
-                        layout= random_layout)
-                elif 'new_graph_is_weighted' in new_graph_checkboxes: 
-                    G = Graph( # undirected, weighted, not acyclic
-                        erdos_renyi_random_graph(int(num_nodes), int(num_edges), directed= False, weighted= True),
-                        weighted= True,
-                        digraph= False,
-                        layout= random_layout)
-                elif 'new_graph_is_acyclic' in new_graph_checkboxes: 
-                    G = Graph( # undirected, unweighted, acyclic
-                        erdos_renyi_random_graph(int(num_nodes), int(num_edges), directed= False, acyclic= True),
-                        weighted= False,
-                        digraph= False,
-                        layout= random_layout)
-                else: 
-                    G = Graph( # undirected, unweighted
-                        erdos_renyi_random_graph(int(num_nodes), int(num_edges), directed= False),
-                        weighted= False,
-                        digraph= False,
-                        layout= random_layout)
+            print(f"num nodes: {num_nodes}, num edges: {num_edges}, checkboxes: {new_graph_checkboxes}, layout: {random_layout}")
+            G = create_new_graph(num_nodes, num_edges, new_graph_checkboxes, random_layout)
             return G.elements, G.to_dict(), G.stylesheet, random_layout
 
