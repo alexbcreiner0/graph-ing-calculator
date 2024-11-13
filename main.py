@@ -60,7 +60,8 @@ def get_new_graph_row():
                 id= 'new_graph_checkboxes',
                 options=[
                     {'label': "Directed", "value": "new_graph_is_directed"},
-                    {'label': "Weighted", "value": "new_graph_is_weighted"}
+                    {'label': "Weighted", "value": "new_graph_is_weighted"},
+                    {'label': "Required acyclic", "value": "new_graph_is_acyclic"}
                 ],
                 value=[]
             )

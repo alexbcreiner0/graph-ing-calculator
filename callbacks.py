@@ -1,4 +1,5 @@
 from dash import Input, Output, ctx
+from random import randint
 from dash.exceptions import PreventUpdate
 from settings import *
 from graph import Graph
@@ -60,6 +61,7 @@ def register_callbacks(app):
     @app.callback(Output(component_id='graph', component_property='elements'),
                   Output(component_id='current_graph', component_property='data'),
                   Output(component_id='graph', component_property='stylesheet'),
+                  Output(component_id='layout dropdown', component_property='value'),
                   Input(component_id='current_graph', component_property='data'),
                   Input(component_id='add_edge', component_property='n_clicks'),
                   Input(component_id='new_edge_source_field', component_property='value'),
@@ -85,7 +87,7 @@ def register_callbacks(app):
                 current_graph['layout'],
                 new_edge_weight_field
             )
-            return G.elements, G.to_dict(), G.stylesheet
+            return G.elements, G.to_dict(), G.stylesheet, current_graph['layout']['name']
         elif ctx.triggered_id == 'remove_edge':
             G = remove_edge_from_graph(
                 current_graph['adj_list'],
@@ -93,37 +95,80 @@ def register_callbacks(app):
                 current_graph['is_directed'],
                 current_graph['is_weighted'],
             )
-            return G.elements, G.to_dict(), G.stylesheet
+            return G.elements, G.to_dict(), G.stylesheet, current_graph['layout']['name']
         elif ctx.triggered_id == 'add_vertex':
             G = add_vertex_to_graph(
                 current_graph['adj_list'],
                 vertex_name,
                 current_graph['is_directed'],
                 current_graph['is_weighted'])
-            return G.elements, G.to_dict(), G.stylesheet
+            return G.elements, G.to_dict(), G.stylesheet, current_graph['layout']['name']
         elif ctx.triggered_id == 'remove_vertex':
             G = remove_vertex_from_graph(
                 current_graph['adj_list'],
                 vertex_name,
                 current_graph['is_directed'],
                 current_graph['is_weighted'])
-            return G.elements, G.to_dict(), G.stylesheet
+            return G.elements, G.to_dict(), G.stylesheet, current_graph['layout']['name']
         elif ctx.triggered_id == 'new_graph_button':
+            random_layout = LAYOUT_LIST[randint(0,4)]
+            try:
+                num_nodes = int(num_nodes_field_new_graph)
+            except ValueError:
+                num_nodes = 7
+            try:
+                num_edges = int(num_edges_field_new_graph)
+            except ValueError:
+                num_edges = 7
             if 'new_graph_is_directed' in new_graph_checkboxes:
-                print("Graph is supposed to be directed")
-                G = Graph(
-                    erdos_renyi_random_graph(int(num_nodes_field_new_graph), int(num_edges_field_new_graph)),
-                    weighted= False,
-                    digraph= True,
-                    layout= current_graph['layout']['name'])
-                print(G.to_dict()['stylesheet'])
+                if 'new_graph_is_weighted' in new_graph_checkboxes and 'new_graph_is_acyclic' in new_graph_checkboxes:
+                    G = Graph( # directed, weighted, acyclic
+                        erdos_renyi_random_graph(int(num_nodes), int(num_edges), weighted= True, acyclic= True),
+                        weighted= True,
+                        digraph= True,
+                        layout= random_layout)
+                elif 'new_graph_is_weighted' in new_graph_checkboxes:
+                    G = Graph( # directed, weighted, not acyclic
+                        erdos_renyi_random_graph(int(num_nodes), int(num_edges), weighted= True),
+                        weighted= True,
+                        digraph= True,
+                        layout= random_layout)
+                elif 'new_graph_is_acyclic' in new_graph_checkboxes:
+                    G = Graph( # directed, unweighted, acyclic
+                        erdos_renyi_random_graph(int(num_nodes), int(num_edges), acyclic= True),
+                        weighted= False,
+                        digraph= True,
+                        layout= random_layout)
+                else:
+                    G = Graph( # directed, unweighted, not acyclic
+                        erdos_renyi_random_graph(int(num_nodes), int(num_edges), weighted= False, acyclic= True),
+                        weighted= False,
+                        digraph= True,
+                        layout= random_layout)
             else:
-                print("Graph is not supposed to be directed")
-                G = Graph(
-                    erdos_renyi_random_graph(int(num_nodes_field_new_graph), int(num_edges_field_new_graph), directed= False),
-                    weighted= False,
-                    digraph= False,
-                    layout= current_graph['layout']['name'])
-                print(G.to_dict()['stylesheet'])
-            return G.elements, G.to_dict(), G.stylesheet
+                if 'new_graph_is_weighted' in new_graph_checkboxes and 'new_graph_is_acyclic' in new_graph_checkboxes: 
+                    G = Graph( # undirected, weighted, acyclic
+                        erdos_renyi_random_graph(int(num_nodes), int(num_edges), directed= False, weighted= True, acyclic= True),
+                        weighted= True,
+                        digraph= False,
+                        layout= random_layout)
+                elif 'new_graph_is_weighted' in new_graph_checkboxes: 
+                    G = Graph( # undirected, weighted, not acyclic
+                        erdos_renyi_random_graph(int(num_nodes), int(num_edges), directed= False, weighted= True),
+                        weighted= True,
+                        digraph= False,
+                        layout= random_layout)
+                elif 'new_graph_is_acyclic' in new_graph_checkboxes: 
+                    G = Graph( # undirected, unweighted, acyclic
+                        erdos_renyi_random_graph(int(num_nodes), int(num_edges), directed= False, acyclic= True),
+                        weighted= False,
+                        digraph= False,
+                        layout= random_layout)
+                else: 
+                    G = Graph( # undirected, unweighted
+                        erdos_renyi_random_graph(int(num_nodes), int(num_edges), directed= False),
+                        weighted= False,
+                        digraph= False,
+                        layout= random_layout)
+            return G.elements, G.to_dict(), G.stylesheet, random_layout
 

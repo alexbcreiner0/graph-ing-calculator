@@ -75,32 +75,97 @@ def random_weighted_dag(n, weight_range = (1,10), negative_weights = False):
             graph[u][v] = w
     return graph
 
-def erdos_renyi_random_graph_old(n,m):
-    # make random adjacency list
-    letters = list(string.ascii_uppercase)
-    p = m/(n-1)
-    adj_list = {letters[i]: [] for i in range(n)}
-    rng = r.default_rng()
-    for i in adj_list:
-        for j in range(n):
-            if letters[j] == i: continue
-            if rng.binomial(1, p) == 1:
-                adj_list[i].append(letters[j])
-    return adj_list
-
-def erdos_renyi_random_graph(n,m, directed= True):
-    # helper method to generate all n^2 possible edge pairs
+def erdos_renyi_random_graph_old(n,m, directed= True, weighted = False, max_weight= 10, negative_weights= False, acyclic= False):
     letters = get_names(n)
-    print(letters)
-    adj_list = { letter: [] for letter in letters }
+    adj_list = { letter: {} for letter in letters } if weighted else { letter: [] for letter in letters }
     if directed:
         edges = [(letters[i], letters[j]) for i in range(n) for j in range(n) if i != j]
     else:
         edges = [(letters[i], letters[j]) for i in range(n) for j in range(i) if i != j]
     edge_sample = random.sample(edges, m)
+    if negative_weights:
+        weights = [ random.randint(-1*max_weight, max_weight) for i in range(m) ]
+    else:
+        weights = [ random.randint(1, max_weight) for i in range(m) ]
     for edge in edge_sample:
-        adj_list[edge[0]].append(edge[1])
+        if weighted:
+            adj_list[edge[0]][edge[1]] = weights.pop()
+        else:
+            adj_list[edge[0]].append(edge[1])
+    return adj_list
+
+class UnionFind:
+    def __init__(self, n):
+        self.parent = list(range(n))
+    
+    def find(self, x):
+        if self.parent[x] != x:
+            self.parent[x] = self.find(self.parent[x])
+        return self.parent[x]
+    
+    def union(self, x, y):
+        rootX = self.find(x)
+        rootY = self.find(y)
+        if rootX != rootY:
+            self.parent[rootY] = rootX
+            return True
+        return False
+
+
+# Clever disjoint set data structure using union-by-rank and path compression
+class DisjointFamily:
+    def __init__(self, things = []):
+        self.elements = {thing: thing for thing in things}
+        self.ranks = {thing: 1 for thing in things} 
+
+    def find_set(self, value):
+        if value != self.elements[value]: 
+            self.elements[value] = self.find_set(self.elements[value]) 
+        return self.elements[value]
+
+    def union(self, x, y):
+        head_x = self.find_set(x)
+        head_y = self.find_set(y)
+        if head_x == head_y: return False
+        if self.ranks[head_x] > self.ranks[head_y]:
+            self.elements[head_y] = head_x
+        else:
+            self.elements[head_x] = head_y
+            if self.ranks[head_x] == self.ranks[head_y]:
+                self.ranks[head_y] = self.ranks[head_x]+1
+        return True
+
+def erdos_renyi_random_graph(n,m, directed= True, weighted = False, max_weight= 10, negative_weights= False, acyclic= False):
+    letters = get_names(n)
+    adj_list = { letter: {} for letter in letters } if weighted else { letter: [] for letter in letters }
+    print(adj_list)
+    if directed and acyclic:
+        edges_sample = random.sample([(letters[i], letters[j]) for i in range(n) for j in range(i) if i != j],m)
+    elif directed and not acyclic:
+        edges_sample = random.sample([(letters[i], letters[j]) for i in range(n) for j in range(n) if i != j],m)
+    elif not directed and acyclic:
+        prelim_edges = [(letters[i], letters[j]) for i in range(n) for j in range(i) if i != j]
+        random.shuffle(prelim_edges)
+        dj = DisjointFamily(letters)
+        edges_sample = []
+        for edge in prelim_edges:
+            if dj.union(edge[0],edge[1]):
+                edges_sample.append(edge)
+            if len(edges_sample) == m: break
+    else: # undirected, not necessarily acyclic
+        edges_sample = random.sample([(letters[i], letters[j]) for i in range(n) for j in range(i) if i != j],m)
+
+    # generate weights if needed
+    if negative_weights:
+        weights = [ random.randint(-1*max_weight, max_weight) for i in range(m) ]
+    else:
+        weights = [ random.randint(1, max_weight) for i in range(m) ]
+    for edge in edges_sample:
+        if weighted:
+            adj_list[edge[0]][edge[1]] = weights.pop()
+        else:
+            adj_list[edge[0]].append(edge[1])
     return adj_list
 
 if __name__ == "__main__":
-    print(erdos_renyi_random_graph(10, 20, directed= False))
+    print(erdos_renyi_random_graph(8, 10, directed= False, weighted= True, acyclic= True))

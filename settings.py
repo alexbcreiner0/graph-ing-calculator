@@ -1,3 +1,5 @@
+import random
+
 LAYOUT_SETTINGS = {
     'cose': { 'name': 'cose', 'nodeRepulsion': 400000000, 'idealEdgeLength': 100, 'nodeOverlap': 200, 
         'edgeElasticity': 0.45, 'padding': 30, 'animate': True, 'animationEasing': 'ease-in-out', 'animationDuration': 1000000, 'animationThreshold': 0 },
@@ -6,3 +8,8 @@ LAYOUT_SETTINGS = {
     'grid': {'name': 'grid', 'animate': True},
     'random': {'name': 'random', 'animate': True},
 }
+
+LAYOUT_LIST = [ 'cose', 'circle', 'concentric', 'grid', 'random' ]
+
+if __name__ == '__main__':
+    pass
