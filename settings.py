@@ -7,9 +7,11 @@ LAYOUT_SETTINGS = {
     'concentric': {'name': 'concentric', 'minNodeSpacing': 100, 'equidistant': True, 'padding': 30, 'animate': True},
     'grid': {'name': 'grid', 'animate': True},
     'random': {'name': 'random', 'animate': True},
+    'dagre': {'name': 'dagre', 'animate': True, 'rankDir': 'TB', 'nodeSep': 60, 'edgeSep': 100, 'rankSep': 100, 'ranker': 'network-simplex'},
+    'breadthfirst': {'name': 'dagre', 'animate': True}
 }
 
-LAYOUT_LIST = [ 'cose', 'circle', 'concentric', 'grid', 'random' ]
+LAYOUT_LIST = [ 'cose', 'circle', 'concentric', 'grid', 'random', 'dagre', 'breadthfirst' ]
 
 if __name__ == '__main__':
     pass

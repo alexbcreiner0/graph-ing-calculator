@@ -137,12 +137,24 @@ class DisjointFamily:
 
 def erdos_renyi_random_graph(n,m, directed= True, weighted = False, max_weight= 10, negative_weights= False, acyclic= False):
     letters = get_names(n)
+    print(f"letters: {letters}")
     adj_list = { letter: {} for letter in letters } if weighted else { letter: [] for letter in letters }
     print(adj_list)
     if directed and acyclic:
-        edges_sample = random.sample([(letters[i], letters[j]) for i in range(n) for j in range(i) if i != j],m)
+        if weighted:
+            adj_list = random_weighted_dag(n)
+        else:
+            adj_list = random_dag(n)
+        return adj_list
+        # print("directed and acyclic")
+        # edges = [(letters[i], letters[j]) for j in range(n) for i in range(j) if i != j]
+        # print(edges)
+        # random.shuffle(edges)
+        # edges_sample = edges[:m]
     elif directed and not acyclic:
-        edges_sample = random.sample([(letters[i], letters[j]) for i in range(n) for j in range(n) if i != j],m)
+        edges = [(letters[i], letters[j]) for i in range(n) for j in range(n) if i != j]
+        random.shuffle(edges)
+        edges_sample = edges[:m]
     elif not directed and acyclic:
         prelim_edges = [(letters[i], letters[j]) for i in range(n) for j in range(i) if i != j]
         random.shuffle(prelim_edges)

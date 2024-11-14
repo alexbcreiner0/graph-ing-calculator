@@ -4,10 +4,13 @@ from dash.exceptions import PreventUpdate
 from settings import *
 from graph import Graph
 from graph_generators import erdos_renyi_random_graph, random_graph
+from graph_algos_new import depth_first_traverse
 
 def add_edge_to_graph(adj_list, edge, is_directed, is_weighted, current_layout, weight= ''):
     source = edge[0]
     dest = edge[1]
+    print(f'source = {source}, dest= {dest}')
+    print(f'Weighted: {is_weighted}')
     if source not in adj_list:
         if is_weighted:
             adj_list[source] = {dest: float(weight)}
@@ -17,7 +20,7 @@ def add_edge_to_graph(adj_list, edge, is_directed, is_weighted, current_layout, 
         if is_weighted:
             adj_list[source][dest] = float(weight) if weight != '' else 0.0
         else:
-            adj_list[source].append(float(weight)) if weight != '' else 0.0
+            adj_list[source].append(dest)
     return Graph(adj_list, digraph= is_directed, weighted= is_weighted, layout= current_layout['name'])
 
 def remove_edge_from_graph(adj_list, edge, is_directed, is_weighted):
@@ -71,7 +74,7 @@ def create_new_graph(num_nodes, num_edges, new_graph_checkboxes, layout):
                 layout= layout)
         else:
             G = Graph( # directed, unweighted, not acyclic
-                erdos_renyi_random_graph(int(num_nodes), int(num_edges), weighted= False, acyclic= True),
+                erdos_renyi_random_graph(int(num_nodes), int(num_edges), weighted= False, acyclic= False),
                 weighted= False,
                 digraph= True,
                 layout= layout)
@@ -102,11 +105,16 @@ def create_new_graph(num_nodes, num_edges, new_graph_checkboxes, layout):
                 layout= layout)
     return G
 
+def make_dfs_forest(adj_list):
+    G = depth_first_traverse(adj_list, display_extra_edges= True)
+    return G
+
 def register_callbacks(app):
     @app.callback(Output(component_id='graph', component_property='layout', allow_duplicate=True), 
         Input('layout dropdown', 'value'), 
         prevent_initial_call='initial_duplicate')
     def update_layout(layout):
+        print(f"Changing layout. ctx triggered id: {ctx.triggered_id}")
         if ctx.triggered_id == None:
             raise PreventUpdate
         else:
@@ -115,7 +123,7 @@ def register_callbacks(app):
     @app.callback(Output(component_id='graph', component_property='elements'),
                   Output(component_id='current_graph', component_property='data'),
                   Output(component_id='graph', component_property='stylesheet'),
-                  Output(component_id='layout dropdown', component_property='value'),
+                  #Output(component_id='layout dropdown', component_property='value'),
                   Input(component_id='current_graph', component_property='data'),
                   Input(component_id='add_edge', component_property='n_clicks'),
                   Input(component_id='new_edge_source_field', component_property='value'),
@@ -128,31 +136,33 @@ def register_callbacks(app):
                   Input(component_id='new_graph_button', component_property='n_clicks'),
                   Input(component_id='num_nodes_field_new_graph', component_property='value'),
                   Input(component_id='num_edges_field_new_graph', component_property='value'),
-                  Input(component_id='new_graph_checkboxes', component_property='value'))
-    def add_new_edge(current_graph, add_edge, new_edge_source_field, new_edge_dest_field, new_edge_weight_field, remove_edge, add_vertex, remove_vertex, vertex_name, new_graph_button, num_nodes_field_new_graph, num_edges_field_new_graph, new_graph_checkboxes):
+                  Input(component_id='new_graph_checkboxes', component_property='value'),
+                  Input(component_id='dfs_button', component_property='n_clicks'))
+    def add_new_edge(current_graph, add_edge, new_edge_source_field, new_edge_dest_field, new_edge_weight_field, remove_edge, add_vertex, remove_vertex, vertex_name, new_graph_button, num_nodes_field_new_graph, num_edges_field_new_graph, new_graph_checkboxes, dfs_button):
         # print(ctx.triggered_id)
         if ctx.triggered_id in [None, 'new_graph_checkboxes', 'current_graph', 'num_edges_field_new_graph', 'num_nodes_field_new_graph', 'new_edge_source_field', 'new_edge_dest_field', 'new_edge_weight_field', 'vertex_name']: raise PreventUpdate
         elif ctx.triggered_id == 'add_edge':
+            print(f"{(new_edge_source_field, new_edge_dest_field)}")
             G = add_edge_to_graph(
                 current_graph['adj_list'], (new_edge_source_field, new_edge_dest_field),
                 current_graph['is_directed'], current_graph['is_weighted'],
                 current_graph['layout'], new_edge_weight_field)
-            return G.elements, G.to_dict(), G.stylesheet, current_graph['layout']['name']
+            return G.elements, G.to_dict(), G.stylesheet#, current_graph['layout']['name']
         elif ctx.triggered_id == 'remove_edge':
             G = remove_edge_from_graph(
                 current_graph['adj_list'], (new_edge_source_field, new_edge_dest_field),
                 current_graph['is_directed'], current_graph['is_weighted'])
-            return G.elements, G.to_dict(), G.stylesheet, current_graph['layout']['name']
+            return G.elements, G.to_dict(), G.stylesheet#, current_graph['layout']['name']
         elif ctx.triggered_id == 'add_vertex':
             G = add_vertex_to_graph(
                 current_graph['adj_list'], vertex_name,
                 current_graph['is_directed'], current_graph['is_weighted'])
-            return G.elements, G.to_dict(), G.stylesheet, current_graph['layout']['name']
+            return G.elements, G.to_dict(), G.stylesheet#, current_graph['layout']['name']
         elif ctx.triggered_id == 'remove_vertex':
             G = remove_vertex_from_graph(
                 current_graph['adj_list'], vertex_name,
                 current_graph['is_directed'], current_graph['is_weighted'])
-            return G.elements, G.to_dict(), G.stylesheet, current_graph['layout']['name']
+            return G.elements, G.to_dict(), G.stylesheet#, current_graph['layout']['name']
         elif ctx.triggered_id == 'new_graph_button':
             random_layout = LAYOUT_LIST[randint(0,4)]
             try:
@@ -165,5 +175,7 @@ def register_callbacks(app):
                 num_edges = 7
             print(f"num nodes: {num_nodes}, num edges: {num_edges}, checkboxes: {new_graph_checkboxes}, layout: {random_layout}")
             G = create_new_graph(num_nodes, num_edges, new_graph_checkboxes, random_layout)
-            return G.elements, G.to_dict(), G.stylesheet, random_layout
-
+            return G.elements, G.to_dict(), G.stylesheet#, random_layout
+        elif ctx.triggered_id == 'dfs_button':
+            G = make_dfs_forest(current_graph['adj_list'])
+            return G.elements, G.to_dict(), G.stylesheet#, current_graph['layout']['name']            

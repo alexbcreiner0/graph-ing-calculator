@@ -13,13 +13,7 @@ G: Graph = Graph(G_3_7, digraph= True)
 register_callbacks(app)
 
 def get_dropdown_row():
-    options_list = [
-        {'label': 'Grid', 'value': 'grid'}, 
-        {'label': 'Random', 'value': 'random'},
-        {'label': 'Circle', 'value': 'circle'}, 
-        {'label': 'Cose', 'value': 'cose'}, 
-        {'label': 'Concentric', 'value': 'concentric'}
-    ]
+    options_list = [ {'label': name.title(), 'value': name} for name in LAYOUT_SETTINGS ]
     dropdown_row = html.Div(
         [
             html.H3(
@@ -69,10 +63,10 @@ def get_new_graph_row():
         style={'display': 'flex', 'align-items': 'center'}
     )
 
-def graph_algos_row():
+def get_graph_algos_row():
     return html.Div(
         [
-
+            html.Button('DFS Traversal', id= 'dfs_button', style= {'margin-right': '5px'})
         ],
         style={'display': 'flex', 'align-items': 'center'}
     )
@@ -151,6 +145,8 @@ if __name__ == '__main__':
     new_graph_row = get_new_graph_row()
     title = html.H1("'Graphing' Calculator")
     graph_store = dcc.Store(id= 'current_graph', data= G.to_dict())
+    graph_algos_row = get_graph_algos_row()
+    
     # remove_elements_row = get_graph_remove_row()
 
     display_panel = html.Div(
@@ -159,7 +155,7 @@ if __name__ == '__main__':
     )
 
     control_panel = html.Div(
-        children= [ title, dropdown_row, add_elements_row, new_graph_row ],
+        children= [ title, dropdown_row, add_elements_row, new_graph_row, graph_algos_row ],
         style={'flex': '1', 'padding': '10px'}
     )
 

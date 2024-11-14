@@ -69,7 +69,7 @@ class Graph:
 
 		if not digraph: self.__undigraphify()
 		self.__create_elements()
-
+ 
 	def __patch_list(self):
 		new_keys = []
 		for neighbors in self.adj_list.values():
