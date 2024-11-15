@@ -1,4 +1,5 @@
 import dash_cytoscape as cyto
+from graph_examples import *
 from settings import LAYOUT_SETTINGS
 
 class Graph:
@@ -102,8 +103,10 @@ class Graph:
 
     def to_dict(self):
         output = vars(self)
-        if "weights" in output: del output["weights"]
-        if "edges" in output: del output["edges"]
+        # output['weights'] = self.__replace_with_strings(output['weights'])
+        # output['edges'] = self.__replace_with_strings(output['edges'])
+        if 'weights' in output: del output['weights']
+        if 'edges' in output: del output['edges']
         return output
 
     def get_cytograph(self):
@@ -117,5 +120,28 @@ class Graph:
         )
 
     def color_edge(self, edge, edge_type):
-        index = self.edge_directory[str(edge[0])+str(edge[1])]
+        try:
+            index = self.edge_directory[str(edge[0])+str(edge[1])]
+        except KeyError:
+            index = self.edge_directory[str(edge[1])+str(edge[0])]
         self.elements[index]['classes'] = edge_type
+
+    def __replace_with_strings(self, dictionary):
+        new_dict = {}
+        for name in dictionary:
+            string_name = name[0]+','+name[1]
+            new_dict[string_name] = dictionary[name]
+        return new_dict
+
+    def __replace_with_tups(self, dictionary):
+        new_dict = {}
+        for name in dictionary:
+            tup_name = tuple(name.split(','))
+            new_dict[tup_name] = dictionary[name]
+        return new_dict
+
+if __name__ == '__main__':
+    G = Graph(G_3_7)
+    print(G.elements)
+
+    # print(str(('E', 'H')).lstrip('(').rstrip(')').split(','))

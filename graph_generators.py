@@ -4,6 +4,7 @@ from numpy import random as r
 import random
 
 def lexicographic(n_chars):
+    '''Returns the set of all strings of length n_chars, lexicographically ordered'''
     if n_chars == 1:
         return [chr(i+65) for i in range(26)]
     else:
@@ -14,6 +15,7 @@ def lexicographic(n_chars):
         return new_strings
 
 def get_names(n):
+    '''Creates names for a graph with n many vertices, ordered lexicographically'''
     names = []
     i = 1
     while len(names) < n:
@@ -22,8 +24,9 @@ def get_names(n):
     return names[:n]
 
 def matrix_to_list(adj_matrix):
+    '''Helper function which converts adjacency matrices to adjacency lists'''
     n = len(adj_matrix)
-    letters = lexicographic(n)
+    letters = get_names(n)
     G = {letters[i]: [] for i in range(n)}
     for i,u in enumerate(G):
         for j in range(n):
@@ -53,7 +56,7 @@ def random_weighted_graph(n, weight_range = (1,10), negative_weights = False):
     for u in graph:
         for v in unweighted_graph[u]:
             w = rng.integers(weight_range[0], weight_range[1])
-            graph[u][v] = w
+            graph[u][v] = int(w)
     return graph
 
 # Works because a matrix is a dag iff it's nodes can be rearranged such that it's adjacency matrix is triangular (toposort a dag and see for yourself)
@@ -72,45 +75,8 @@ def random_weighted_dag(n, weight_range = (1,10), negative_weights = False):
     for u in graph:
         for v in unweighted_graph[u]:
             w = rng.integers(weight_range[0], weight_range[1])
-            graph[u][v] = w
+            graph[u][v] = int(w)
     return graph
-
-def erdos_renyi_random_graph_old(n,m, directed= True, weighted = False, max_weight= 10, negative_weights= False, acyclic= False):
-    letters = get_names(n)
-    adj_list = { letter: {} for letter in letters } if weighted else { letter: [] for letter in letters }
-    if directed:
-        edges = [(letters[i], letters[j]) for i in range(n) for j in range(n) if i != j]
-    else:
-        edges = [(letters[i], letters[j]) for i in range(n) for j in range(i) if i != j]
-    edge_sample = random.sample(edges, m)
-    if negative_weights:
-        weights = [ random.randint(-1*max_weight, max_weight) for i in range(m) ]
-    else:
-        weights = [ random.randint(1, max_weight) for i in range(m) ]
-    for edge in edge_sample:
-        if weighted:
-            adj_list[edge[0]][edge[1]] = weights.pop()
-        else:
-            adj_list[edge[0]].append(edge[1])
-    return adj_list
-
-class UnionFind:
-    def __init__(self, n):
-        self.parent = list(range(n))
-    
-    def find(self, x):
-        if self.parent[x] != x:
-            self.parent[x] = self.find(self.parent[x])
-        return self.parent[x]
-    
-    def union(self, x, y):
-        rootX = self.find(x)
-        rootY = self.find(y)
-        if rootX != rootY:
-            self.parent[rootY] = rootX
-            return True
-        return False
-
 
 # Clever disjoint set data structure using union-by-rank and path compression
 class DisjointFamily:
@@ -137,20 +103,14 @@ class DisjointFamily:
 
 def erdos_renyi_random_graph(n,m, directed= True, weighted = False, max_weight= 10, negative_weights= False, acyclic= False):
     letters = get_names(n)
-    print(f"letters: {letters}")
     adj_list = { letter: {} for letter in letters } if weighted else { letter: [] for letter in letters }
-    print(adj_list)
     if directed and acyclic:
         if weighted:
             adj_list = random_weighted_dag(n)
         else:
-            adj_list = random_dag(n)
+            adj_list = matrix_to_list(random_dag(n))
+        print(adj_list)
         return adj_list
-        # print("directed and acyclic")
-        # edges = [(letters[i], letters[j]) for j in range(n) for i in range(j) if i != j]
-        # print(edges)
-        # random.shuffle(edges)
-        # edges_sample = edges[:m]
     elif directed and not acyclic:
         edges = [(letters[i], letters[j]) for i in range(n) for j in range(n) if i != j]
         random.shuffle(edges)
@@ -180,4 +140,4 @@ def erdos_renyi_random_graph(n,m, directed= True, weighted = False, max_weight= 
     return adj_list
 
 if __name__ == "__main__":
-    print(erdos_renyi_random_graph(8, 10, directed= False, weighted= True, acyclic= True))
+    print(random_weighted_dag(7))

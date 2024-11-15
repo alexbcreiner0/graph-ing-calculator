@@ -66,7 +66,15 @@ def get_new_graph_row():
 def get_graph_algos_row():
     return html.Div(
         [
-            html.Button('DFS Traversal', id= 'dfs_button', style= {'margin-right': '5px'})
+            html.Button('DFS Traversal', id= 'dfs_button', style= {'margin-right': '5px'}),
+            dcc.Checklist(
+                id= 'display_extra_edges',
+                options=[
+                    {'label': "Display extra edges", "value": "display_extra_edges"}
+                ],
+                value= []
+            ),
+            html.Button('Test button', id= "test_button")
         ],
         style={'display': 'flex', 'align-items': 'center'}
     )
@@ -145,6 +153,7 @@ if __name__ == '__main__':
     new_graph_row = get_new_graph_row()
     title = html.H1("'Graphing' Calculator")
     graph_store = dcc.Store(id= 'current_graph', data= G.to_dict())
+    extra_flags_store = dcc.Store(id= 'extra_info', data= {"dfs_mode": False, "reserve_dfs_graph": None})
     graph_algos_row = get_graph_algos_row()
     
     # remove_elements_row = get_graph_remove_row()
@@ -160,7 +169,7 @@ if __name__ == '__main__':
     )
 
     app.layout = html.Div(
-        children= [ graph_store, control_panel, display_panel ],
+        children= [ graph_store, extra_flags_store, control_panel, display_panel ],
         style= { 'display': 'flex', 'flex-direction': 'row', 'gap': '20px', 'min-height': '100vh' }
     )
 
