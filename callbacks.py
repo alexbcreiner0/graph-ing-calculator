@@ -10,8 +10,6 @@ from graph_algos_new import depth_first_traverse
 def add_edge_to_graph(adj_list, edge, is_directed, is_weighted, current_layout, weight= ''):
     source = edge[0]
     dest = edge[1]
-    print(f'source = {source}, dest= {dest}')
-    print(f'Weighted: {is_weighted}')
     if source not in adj_list:
         if is_weighted:
             adj_list[source] = {dest: float(weight)}
@@ -26,7 +24,6 @@ def add_edge_to_graph(adj_list, edge, is_directed, is_weighted, current_layout, 
 
 def remove_edge_from_graph(adj_list, edge, is_directed, is_weighted):
     source, dest = edge[0], edge[1]
-    print(f"Removing the edge {edge}")
     if dest in adj_list[source]:
         if is_weighted:
             del adj_list[source][dest]
@@ -60,7 +57,6 @@ def create_new_graph(num_nodes, num_edges, new_graph_checkboxes, layout):
                 weighted= True,
                 digraph= True,
                 layout= layout)
-            print(G.adj_list)
         elif 'new_graph_is_weighted' in new_graph_checkboxes:
             G = Graph( # directed, weighted, not acyclic
                 erdos_renyi_random_graph(int(num_nodes), int(num_edges), weighted= True),
@@ -107,7 +103,6 @@ def create_new_graph(num_nodes, num_edges, new_graph_checkboxes, layout):
     return G
 
 def make_dfs_forest(adj_list, is_directed= True, is_weighted= False):
-    print(f"Directed: {is_directed}")
     G, G_extra = depth_first_traverse(adj_list, display_extra_edges= True, is_weighted = is_weighted, is_directed= is_directed)
     return G, G_extra
 
@@ -116,7 +111,6 @@ def register_callbacks(app):
         Input('layout dropdown', 'value'), 
         prevent_initial_call='initial_duplicate')
     def update_layout(layout):
-        print(f"Changing layout. ctx triggered id: {ctx.triggered_id}")
         if ctx.triggered_id == None:
             raise PreventUpdate
         else:
@@ -144,7 +138,6 @@ def register_callbacks(app):
                   Input(component_id='dfs_button', component_property='n_clicks'),
                   Input(component_id='display_extra_edges', component_property='value'))
     def add_new_edge(current_graph, extra_info, add_edge, new_edge_source_field, new_edge_dest_field, new_edge_weight_field, remove_edge, add_vertex, remove_vertex, vertex_name, new_graph_button, num_nodes_field_new_graph, num_edges_field_new_graph, new_graph_checkboxes, dfs_button, display_extra_edges):
-        # print(ctx.triggered_id)
         if ctx.triggered_id in [None, 'extra_info', 'new_graph_checkboxes', 'current_graph', 'num_edges_field_new_graph', 'num_nodes_field_new_graph', 'new_edge_source_field', 'new_edge_dest_field', 'new_edge_weight_field', 'vertex_name']: raise PreventUpdate
         elif ctx.triggered_id == 'add_edge':
             G = add_edge_to_graph(
@@ -201,13 +194,4 @@ def register_callbacks(app):
             else:
                 G = Graph(current_graph['adj_list'], digraph= current_graph['is_directed'], weighted= current_graph['is_weighted'], layout= current_graph['layout']['name'])
                 return G.elements, G.to_dict(), G.stylesheet, extra_info
-
-    
-    @app.callback(Input(component_id="test_button", component_property="n_clicks"),
-                  Input('extra_info', 'data'))
-    def print_shit(text_button, extra_info):
-        if ctx.triggered_id in [None, 'extra_info']: raise PreventUpdate
-        mess = extra_info["reserve_dfs_graph"]["elements"]
-        print([u['classes'] for u in mess if 'classes' in u])
-
 

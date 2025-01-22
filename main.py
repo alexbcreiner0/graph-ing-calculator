@@ -1,3 +1,4 @@
+import sys
 from dash import Dash, html, dcc
 import dash_cytoscape as cyto
 from graph_examples import *
@@ -8,8 +9,14 @@ from callbacks import register_callbacks
 
 app = Dash(__name__, title= 'Visual Graphing Calculator')
 
-G: Graph = Graph(G_3_7, digraph= True)
-# G: Graph = Graph(digraph= True, weighted= True)
+if len(sys.argv) == 1:
+    G: Graph = Graph(G_3_7, digraph= True)
+elif sys.argv[1] == 'blank':
+    G: Graph = Graph()
+else:
+    print("Sorry, graph inputs are not supported yet.")
+    G: Graph = Graph(G_3_7, digraph= True)
+
 register_callbacks(app)
 
 def get_dropdown_row():
@@ -74,7 +81,6 @@ def get_graph_algos_row():
                 ],
                 value= []
             ),
-            html.Button('Test button', id= "test_button")
         ],
         style={'display': 'flex', 'align-items': 'center'}
     )
