@@ -14,4 +14,13 @@ source ./dash/bin/activate
 pip3 install -r requirements.txt
 ```
 
-You should now be able to use the app by running the main.py program, and then copying and pasting the local IP address displayed in your terminal. 
+You should now be able to use the app by running the main.py program, e.g.
+```sh
+python3 main.py
+```
+and then copying and pasting the local IP address displayed in your terminal. 
+
+If you want a blank graph to start so that you can create your own using the GUI, give the argument blank:
+```sh
+python3 main.py blank
+```
